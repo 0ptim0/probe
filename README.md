@@ -23,5 +23,5 @@ Macro-based framework for unit testing on hosts and targets
 
 - Only two files
 - Easy to integrate into any C/C++ project
-- Uses only one external function that can be override
+- Uses only one external function that can be overridden
 - Convenient to use in embedded systems
