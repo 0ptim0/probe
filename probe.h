@@ -63,11 +63,18 @@ typedef struct probe_test_case probe_test_case_t;
 void register_test(probe_test_case_handler_t test, const char *name);
 
 /**
- * @brief Functions to set/reset/check errors
+ * @brief Functions to set/reset/check failed checks
  */
 int check_local_error();
 void set_local_error();
 void reset_local_error();
+
+/**
+ * @brief Functions to set/reset/check passed checks
+ */
+int check_local_passed();
+void set_local_passed();
+void reset_local_passed();
 
 /******************************************************************************
  * Public Functions
@@ -90,9 +97,6 @@ void reset_local_error();
  * Prints a message and sets an error
  */
 #define LOG_ERROR(expression)             \
-    if (!check_local_error()) {           \
-        printf("Failed \n");              \
-    }                                     \
     printf(                               \
         "    %s, line %d: "               \
         "%s\n",                           \
@@ -100,16 +104,25 @@ void reset_local_error();
     set_local_error()
 
 /**
+ * @brief Prints that test passed
+ * @param expression expression to print
+ * Prints a message and sets an error
+ */
+#define LOG_PASSED(expression) set_local_passed()
+
+/**
  * @brief Checks whether an expression is true
  * @param expression boolean expression to check
  * Prints a message and sets an error if
  * expressions is not true
  */
-#define CHECK_TRUE(expression)       \
-    do {                             \
-        if (!(expression)) {         \
-            LOG_ERROR((expression)); \
-        }                            \
+#define CHECK_TRUE(expression)      \
+    do {                            \
+        if (!(expression)) {        \
+            LOG_ERROR(expression);  \
+        } else {                    \
+            LOG_PASSED(expression); \
+        }                           \
     } while (0)
 
 /**
@@ -118,11 +131,13 @@ void reset_local_error();
  * Prints a message and sets an error if
  * expressions is not false
  */
-#define CHECK_FALSE(expression)       \
-    do {                              \
-        if ((expression)) {           \
-            LOG_ERROR(!(expression)); \
-        }                             \
+#define CHECK_FALSE(expression)     \
+    do {                            \
+        if ((expression)) {         \
+            LOG_ERROR(expression);  \
+        } else {                    \
+            LOG_PASSED(expression); \
+        }                           \
     } while (0)
 
 /**
@@ -132,11 +147,13 @@ void reset_local_error();
  * Prints a message and sets an error if
  * two variable are not equal
  */
-#define CHECK_EQ(var1, var2)         \
-    do {                             \
-        if ((var1) != (var2)) {      \
-            LOG_ERROR(var1 == var2); \
-        }                            \
+#define CHECK_EQ(var1, var2)          \
+    do {                              \
+        if ((var1) != (var2)) {       \
+            LOG_ERROR((var1, var2));  \
+        } else {                      \
+            LOG_PASSED((var1, var2)); \
+        }                             \
     } while (0)
 
 /**
@@ -146,11 +163,13 @@ void reset_local_error();
  * Prints a message and sets an error if
  * two variables are queal
  */
-#define CHECK_NOT_EQ(var1, var2)     \
-    do {                             \
-        if ((var1) == (var2)) {      \
-            LOG_ERROR(var1 != var2); \
-        }                            \
+#define CHECK_NOT_EQ(var1, var2)      \
+    do {                              \
+        if ((var1) == (var2)) {       \
+            LOG_ERROR((var1, var2));  \
+        } else {                      \
+            LOG_PASSED((var1, var2)); \
+        }                             \
     } while (0)
 
 /**
@@ -159,11 +178,13 @@ void reset_local_error();
  * Prints a message and sets an error if
  * a variable is not equal to zero
  */
-#define CHECK_ZERO(var)          \
-    do {                         \
-        if ((var) != 0) {        \
-            LOG_ERROR(var == 0); \
-        }                        \
+#define CHECK_ZERO(var)      \
+    do {                     \
+        if ((var) != 0) {    \
+            LOG_ERROR(var);  \
+        } else {             \
+            LOG_PASSED(var); \
+        }                    \
     } while (0)
 
 /**
@@ -172,11 +193,13 @@ void reset_local_error();
  * Prints a message and sets an error if
  * a variable is not equal to zero
  */
-#define CHECK_NOT_ZERO(var)      \
-    do {                         \
-        if ((var) == 0) {        \
-            LOG_ERROR(var != 0); \
-        }                        \
+#define CHECK_NOT_ZERO(var)  \
+    do {                     \
+        if ((var) == 0) {    \
+            LOG_ERROR(var);  \
+        } else {             \
+            LOG_PASSED(var); \
+        }                    \
     } while (0)
 
 /**
@@ -185,11 +208,13 @@ void reset_local_error();
  * Prints a message and sets an error if
  * a variable is not equal to NULL
  */
-#define CHECK_NOT_NULL(var)         \
-    do {                            \
-        if ((var) == NULL) {        \
-            LOG_ERROR(var != NULL); \
-        }                           \
+#define CHECK_NOT_NULL(var)  \
+    do {                     \
+        if ((var) == NULL) { \
+            LOG_ERROR(var);  \
+        } else {             \
+            LOG_PASSED(var); \
+        }                    \
     } while (0)
 
 /**
@@ -198,11 +223,13 @@ void reset_local_error();
  * Prints a message and sets an error if
  * a variable is equal to NULL
  */
-#define CHECK_NULL(var)             \
-    do {                            \
-        if ((var) != NULL) {        \
-            LOG_ERROR(var == NULL); \
-        }                           \
+#define CHECK_NULL(var)      \
+    do {                     \
+        if ((var) != NULL) { \
+            LOG_ERROR(var);  \
+        } else {             \
+            LOG_PASSED(var); \
+        }                    \
     } while (0)
 
 /**
@@ -219,14 +246,18 @@ void reset_local_error();
         while (str1[__s1_i__] != '\0' && str2[__s2_i__] != '\0') { \
             if (str1[__s1_i__] != str2[__s2_i__]) {                \
                 __error__ = 1;                                     \
-                LOG_ERROR(str1 == str2);                           \
+                LOG_ERROR((str1, str2));                           \
                 break;                                             \
             }                                                      \
             ++__s1_i__;                                            \
             ++__s2_i__;                                            \
         }                                                          \
         if (str1[__s1_i__] != str2[__s2_i__] && !__error__) {      \
-            LOG_ERROR(str1 == str2);                               \
+            LOG_ERROR((str1, str2));                               \
+            __error__ = 1;                                         \
+        }                                                          \
+        if (!__error__) {                                          \
+            LOG_PASSED();                                          \
         }                                                          \
     } while (0)
 

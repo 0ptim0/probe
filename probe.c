@@ -29,7 +29,7 @@
 
 #define VERSION_MAJOR 1
 #define VERSION_MINOR 0
-#define VERSION_PATCH 0
+#define VERSION_PATCH 1
 
 /****************************************************************************
  * Private Data
@@ -38,7 +38,8 @@
 static probe_test_case_t test_cases[PROBE_MAX_TEST_CASES];
 static int test_cases_num = 0;
 static int test_cases_passed = 0;
-static int test_cases_error = 0;
+static int test_cases_local_error = 0;
+static int test_cases_local_passed = 0;
 
 /******************************************************************************
  * Private Functions
@@ -54,16 +55,28 @@ void register_test(probe_test_case_handler_t test, const char *name) {
     }
 }
 
+int check_local_error() {
+    return test_cases_local_error;
+}
+
 void set_local_error() {
-    test_cases_error = 1;
+    ++test_cases_local_error;
 }
 
 void reset_local_error() {
-    test_cases_error = 0;
+    test_cases_local_error = 0;
 }
 
-int check_local_error() {
-    return test_cases_error;
+int check_local_passed() {
+    return test_cases_local_passed;
+}
+
+void set_local_passed() {
+    ++test_cases_local_passed;
+}
+
+void reset_local_passed() {
+    test_cases_local_passed = 0;
 }
 
 /******************************************************************************
@@ -72,16 +85,21 @@ int check_local_error() {
 
 int main(void) {
     printf("Probe %d.%d.%d\n", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
-    printf("Running tests...\n");
     for (int i = 0; i < test_cases_num; ++i) {
         reset_local_error();
-        printf("  %s: ", test_cases[i].name);
+        reset_local_passed();
+        printf("----------------\n");
+        printf("%s\n", test_cases[i].name);
         test_cases[i].handler();
         if (!check_local_error()) {
-            printf("Passed\n");
+            printf("Passed: %d/%d\n", test_cases_local_passed,
+                   test_cases_local_passed + test_cases_local_error);
             ++test_cases_passed;
+        } else {
+            printf("Failed\n");
         }
     }
-    printf("\nPassed: %d/%d\n", test_cases_passed, test_cases_num);
+    printf("----------------\n");
+    printf("Passed: %d/%d\n", test_cases_passed, test_cases_num);
     return 0;
 }
