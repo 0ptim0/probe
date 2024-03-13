@@ -31,7 +31,7 @@ Macro-based framework for unit testing on hosts and targets
 As a part of your sources
 ```shell
 cd /path/to/test/dir
-curl -L https://github.com/0ptim0/probe/archive/refs/tags/v1.0.0.zip | tar xz
+curl -L https://github.com/0ptim0/probe/archive/refs/tags/v1.0.1.zip | tar xz
 ```
 
 As a submodule
